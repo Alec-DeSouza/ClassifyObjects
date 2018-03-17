@@ -1,0 +1,5 @@
+# JetBrains IDE files
+.idea/
+
+# Resource folder for models
+static/
