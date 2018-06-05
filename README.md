@@ -86,9 +86,39 @@ Request:
 curl -X POST -H "Content-Type: image/jpeg" --data-binary "@image.jpg" "http://localhost/classify?threshold=0.8"
 ```
 
-Response:
+```json
+{
+    "Dog": 2
+}
 ```
-{"Dog": 2}
+
+To get the normalized bounding box co-ordinates and detection scores of each object, set the optional querystring parameter 'verbose' to 'true'.
+
+Request:
+```
+curl -X POST -H "Content-Type: image/jpeg" --data-binary "@image.jpg" "http://localhost/classify?threshold=0.7&verbose=true"
+```
+
+Response:
+```json
+[
+    {
+        "class": "Dog",
+        "score": 0.9788029193878174,
+        "x1": 0.3925120234489441,
+        "y1": 0.10611796379089355,
+        "x2": 0.979144275188446,
+        "y2": 0.9395240545272827
+    },
+    {
+        "class": "Dog",
+        "score": 0.9340201616287231,
+        "x1": 0.012712955474853516,
+        "y1": 0.03568807244300842,
+        "x2": 0.30899322032928467,
+        "y2": 0.8408676385879517
+    }
+]
 ```
 
 

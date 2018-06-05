@@ -26,7 +26,7 @@ class ClassificationService:
         self.label_map = self.__load_label_map('static/label_map.pbtxt')
         self.detection_graph = self.__load_model('static/frozen_inference_graph.pb')
 
-    def classify(self, image, detection_threshold):
+    def classify(self, image, detection_threshold, verbose):
         image_np = self.__load_image_into_numpy_array(image.convert('RGB'))
         detection_graph = self.detection_graph
 
@@ -35,16 +35,27 @@ class ClassificationService:
                 image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
                 detection_scores = detection_graph.get_tensor_by_name('detection_scores:0')
                 detection_classes = detection_graph.get_tensor_by_name('detection_classes:0')
+                detection_boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
 
                 image_np_expanded = np.expand_dims(image_np, axis=0)
 
-                (scores, classes) = sess.run([detection_scores, detection_classes],
-                                             feed_dict={image_tensor: image_np_expanded})
+                (scores, classes, boxes) = sess.run([detection_scores, detection_classes, detection_boxes],
+                                                    feed_dict={image_tensor: image_np_expanded})
 
-                classes_detected = [self.label_map[int(detection_class)] for detection_class, detection_score in
-                                    zip(classes[0], scores[0]) if detection_score > detection_threshold]
+                if verbose:
+                    detections = [{'class': self.label_map[int(detection_class)],
+                                   'score': float(detection_score),
+                                   'x1': float(bbox[1]),
+                                   'y1': float(bbox[0]),
+                                   'x2': float(bbox[3]),
+                                   'y2': float(bbox[2])}
+                                  for detection_class, detection_score, bbox in
+                                  zip(classes[0], scores[0], boxes[0]) if detection_score > detection_threshold]
+                else:
+                    detections = [self.label_map[int(detection_class)] for detection_class, detection_score in
+                                  zip(classes[0], scores[0]) if detection_score > detection_threshold]
 
-        return dict(Counter(classes_detected))
+        return detections if verbose else dict(Counter(detections))
 
     @staticmethod
     def __load_image_into_numpy_array(image):

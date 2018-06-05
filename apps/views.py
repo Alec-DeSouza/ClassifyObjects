@@ -39,9 +39,16 @@ def classify(request):
 
     image = Image.open(BytesIO(request.body))
     detection_threshold = float(request.GET.get('threshold', 0.75))
+    verbose = parse_bool(request.GET.get("verbose", False))
 
-    classifications = service.classify(image, detection_threshold)
+    classifications = service.classify(image, detection_threshold, verbose)
     print(classifications)
 
     msg = json.dumps(classifications)
     return HttpResponse(msg, 'application/json')
+
+
+def parse_bool(value):
+    if type(value) == bool:
+        return value
+    return value.lower() == "true"
