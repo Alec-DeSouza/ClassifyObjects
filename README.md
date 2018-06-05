@@ -47,20 +47,21 @@ NOTE: Depending on your usecase, you may need to retrain the models on your own 
 
 ## API
 
-The classification service provides a simple API that can be used for classifying objects. Once deployed, you can use a POST request with the image data to the endpoint with an optional detection threshold value. The resulting value will be a JSON encoded list of detected objects with their respective quantities.
+The classification service provides a simple API that can be used for classifying objects. Once deployed, you can use a POST request with the image data to the endpoint with optional parameters. The resulting value will be a JSON encoded list of detected objects with their respective quantities.
 
 The following is a breakdown of the request:
 
 ```
-POST /classify?threshold=[Detection threshold] HTTP/1.1
+POST /classify?threshold=[Detection threshold]&verbose=[true or false] HTTP/1.1
 Host: [Your host]
 Content-Type: [image/jpeg or image/png]
 
 [Image data]
 ```
 
-If the detection threshold is not specified, the default value of 0.75 will be used.
+The threshold parameter is used for filtering out results based on the confidence level. If no threshold is provided, a default value of 0.75 will be used.
 
+The verbose parameter is used for changing the output format of the results. When enabled, the output includes a list of classes, scores, and normalized bounds. If disabled, the output will use a compact form which includes the classes with the number of occurences. By default, verbosity is disabled.
 
 ## Testing
 
@@ -72,7 +73,7 @@ python manage.py runserver 80
 This command will bind the service to localhost on port 80. Depending on the size of the model, this command may take up to a minute to complete.
 
 The endpoint can be easily tested by using programs or through a command-line tool (e.g curl).
-The following is an example of how you can use curl to test the endpoint with an image named `image.jpg` in the current working directory and a detection threshold of 0.8:
+The following are examples of how you can use curl to test the endpoint with an image named `image.jpg` in the current working directory:
 
 <div align="center">
     <br>
@@ -81,7 +82,7 @@ The following is an example of how you can use curl to test the endpoint with an
     <i>Image retrieved from <a href="https://github.com/tensorflow/models/tree/master/research/object_detection/test_images">test image set</a> in TensorFlow's Object Detection API repository</i>
 </div>
 
-Request:
+Request with threshold of 0.8:
 ```
 curl -X POST -H "Content-Type: image/jpeg" --data-binary "@image.jpg" "http://localhost/classify?threshold=0.8"
 ```
@@ -92,11 +93,9 @@ curl -X POST -H "Content-Type: image/jpeg" --data-binary "@image.jpg" "http://lo
 }
 ```
 
-To get the normalized bounding box co-ordinates and detection scores of each object, set the optional querystring parameter 'verbose' to 'true'.
-
-Request:
+Request with threshold of 0.8 and verbose output:
 ```
-curl -X POST -H "Content-Type: image/jpeg" --data-binary "@image.jpg" "http://localhost/classify?threshold=0.7&verbose=true"
+curl -X POST -H "Content-Type: image/jpeg" --data-binary "@image.jpg" "http://localhost/classify?threshold=0.8&verbose=true"
 ```
 
 Response:

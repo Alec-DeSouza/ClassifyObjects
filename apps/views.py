@@ -39,16 +39,14 @@ def classify(request):
 
     image = Image.open(BytesIO(request.body))
     detection_threshold = float(request.GET.get('threshold', 0.75))
-    verbose = parse_bool(request.GET.get("verbose", False))
+    verbose = request.GET.get('verbose', 'false')
 
-    classifications = service.classify(image, detection_threshold, verbose)
+    if verbose not in ['true', 'false']:
+        msg = json.dumps({'error': 'Verbose parameter values can only be true or false'})
+        return HttpResponse(msg, 'application/json')
+
+    classifications = service.classify(image, detection_threshold, verbose == 'true')
     print(classifications)
 
     msg = json.dumps(classifications)
     return HttpResponse(msg, 'application/json')
-
-
-def parse_bool(value):
-    if type(value) == bool:
-        return value
-    return value.lower() == "true"

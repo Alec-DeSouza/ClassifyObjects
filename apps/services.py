@@ -43,19 +43,26 @@ class ClassificationService:
                                                     feed_dict={image_tensor: image_np_expanded})
 
                 if verbose:
-                    detections = [{'class': self.label_map[int(detection_class)],
-                                   'score': float(detection_score),
-                                   'x1': float(bbox[1]),
-                                   'y1': float(bbox[0]),
-                                   'x2': float(bbox[3]),
-                                   'y2': float(bbox[2])}
-                                  for detection_class, detection_score, bbox in
-                                  zip(classes[0], scores[0], boxes[0]) if detection_score > detection_threshold]
+                    detections = [
+                        {
+                            'class': self.label_map[int(detection_class)],
+                            'score': float(detection_score),
+                            'x1': float(bbox[1]),
+                            'y1': float(bbox[0]),
+                            'x2': float(bbox[3]),
+                            'y2': float(bbox[2])
+                        }
+                        for detection_class, detection_score, bbox in zip(classes[0], scores[0], boxes[0])
+                        if detection_score > detection_threshold
+                    ]
                 else:
-                    detections = [self.label_map[int(detection_class)] for detection_class, detection_score in
-                                  zip(classes[0], scores[0]) if detection_score > detection_threshold]
+                    detections = dict(Counter([
+                        self.label_map[int(detection_class)]
+                        for detection_class, detection_score in zip(classes[0], scores[0])
+                        if detection_score > detection_threshold
+                    ]))
 
-        return detections if verbose else dict(Counter(detections))
+        return detections
 
     @staticmethod
     def __load_image_into_numpy_array(image):
